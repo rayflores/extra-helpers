@@ -223,16 +223,23 @@
 	add_action( 'woocommerce_checkout_process', 'not_approved_checkboxes' );
 	
 	function not_approved_checkboxes() {
-		if ( get_the_ID() !== 24809 ) return;
-	    
-		if ( ! (int) isset( $_POST['enroll_live'] ) ) {
-			wc_add_notice( __( 'Please acknowledge that you will Live your most nutritious life.' ), 'error' );
-		}
-		if ( ! (int) isset( $_POST['enroll_help'] ) ) {
-			wc_add_notice( __( 'Please acknowledge that you will Help others live their most nutritious lives.' ), 'error' );
-		}
-		if ( ! (int) isset( $_POST['enroll_contribute'] ) ) {
-			wc_add_notice( __( 'Please acknowledge that you will Contribute to the TNS community whenever I can.' ), 'error' );
+		$product_id_1 = 19494;
+		$product_cart_id_1 = WC()->cart->generate_cart_id( $product_id_1 );
+		$in_cart_1 = WC()->cart->find_product_in_cart( $product_cart_id_1 );
+		$product_id_2 = 19489;
+		$product_cart_id_2 = WC()->cart->generate_cart_id( $product_id_2 );
+		$in_cart_2 = WC()->cart->find_product_in_cart( $product_cart_id_2 );
+		if ( $in_cart_1 || $in_cart_2 ) {
+			
+			if ( ! (int) isset( $_POST['enroll_live'] ) ) {
+				wc_add_notice( __( 'Please acknowledge that you will Live your most nutritious life.' ), 'error' );
+			}
+			if ( ! (int) isset( $_POST['enroll_help'] ) ) {
+				wc_add_notice( __( 'Please acknowledge that you will Help others live their most nutritious lives.' ), 'error' );
+			}
+			if ( ! (int) isset( $_POST['enroll_contribute'] ) ) {
+				wc_add_notice( __( 'Please acknowledge that you will Contribute to the TNS community whenever I can.' ), 'error' );
+			}
 		}
 		
 	}
