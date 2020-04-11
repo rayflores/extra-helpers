@@ -7,6 +7,8 @@
 	}
 	add_action('wp_enqueue_scripts', 'enqueue_extras_js');
 	function remove_tns_product_image() {
+	    global $product;
+	    if ( is_product() && get_the_ID() == 24770 )
 		remove_action( 'woocommerce_before_single_product_summary', 'woocommerce_show_product_images', 20 );
 	}
 	add_action('after_setup_theme', 'remove_tns_product_image' );
@@ -64,6 +66,7 @@
 		return $template;
 	}
 	// hide coupon field on the TNS cart page
+	/*
 	function hide_coupon_field_on_cart( $enabled ) {
 		if ( is_page(24770) ) {
 			$enabled = false;
@@ -73,16 +76,17 @@
 	add_filter( 'woocommerce_coupons_enabled', 'hide_coupon_field_on_cart' );
 // hide coupon field on checkout page
 	function hide_coupon_field_on_checkout( $enabled ) {
-		if ( is_page(24770) ) {
+		if ( is_page(24770) || is_page(25245)) {
 			$enabled = false;
 		}
 		return $enabled;
 	}
 	add_filter( 'woocommerce_coupons_enabled', 'hide_coupon_field_on_checkout' );
+	*/
 	// remove messages
 	// move selection below fields 
 	function remove_move_product_selection() {
-		remove_action( 'wcopc_product_selection_fields_before', 'PP_One_Page_Checkout::opc_messages', 10, 2 );
+//		remove_action( 'wcopc_product_selection_fields_before', 'PP_One_Page_Checkout::opc_messages', 10, 2 );
 		remove_action( 'woocommerce_checkout_before_customer_details', 'PP_One_Page_Checkout::add_product_selection_fields', 11 );
 		add_action( 'woocommerce_checkout_after_customer_details', 'PP_One_Page_Checkout::add_product_selection_fields', 11);
 	}
@@ -104,9 +108,9 @@
 			WC()->session->set( 'wc_notices', $notices );
 		}
 	}
-	add_action('woocommerce_before_single_product','remove_added_to_cart_notice',1);
-	add_action('woocommerce_shortcode_before_product_cat_loop','remove_added_to_cart_notice',1);
-	add_action('woocommerce_before_shop_loop','remove_added_to_cart_notice',1);
+//	add_action('woocommerce_before_single_product','remove_added_to_cart_notice',1);
+//	add_action('woocommerce_shortcode_before_product_cat_loop','remove_added_to_cart_notice',1);
+//	add_action('woocommerce_before_shop_loop','remove_added_to_cart_notice',1);
 	
 	// Removes Order Notes Title - Additional Information & Notes Field
     function maybe_remove_order_notes(){
@@ -122,28 +126,47 @@
 	function remove_order_notes( $fields ) {
 	    if ( is_page(24770) ) {
 		    unset( $fields['order']['order_comments'] );
-	    } else {
-		    unset( $fields['order']['order_comments'] );
-		    unset( $fields['billing']['student_heading'] );
-		    unset( $fields['billing']['student_first_name'] );
-		    unset( $fields['billing']['student_last_name'] );
-		    unset( $fields['billing']['student_email'] );
-		    unset( $fields['billing']['student_address_1'] );
-		    unset( $fields['billing']['student_address_2'] );
-		    unset( $fields['billing']['student_city'] );
-		    unset( $fields['billing']['student_state'] );
-		    unset( $fields['billing']['student_zip'] );
-		    unset( $fields['billing']['student_country'] );
-		    unset( $fields['billing']['student_phone'] );
-        }
+	    }
+//	    } else {
+//		    unset( $fields['order']['order_comments'] );
+//		    unset( $fields['billing']['student_heading'] );
+//		    unset( $fields['billing']['student_first_name'] );
+//		    unset( $fields['billing']['student_last_name'] );
+//		    unset( $fields['billing']['student_email'] );
+//		    unset( $fields['billing']['student_address_1'] );
+//		    unset( $fields['billing']['student_address_2'] );
+//		    unset( $fields['billing']['student_city'] );
+//		    unset( $fields['billing']['student_state'] );
+//		    unset( $fields['billing']['student_zip'] );
+//		    unset( $fields['billing']['student_country'] );
+//		    unset( $fields['billing']['student_phone'] );
+//        }
+
 		return $fields;
 	}
+    /*
+	add_filter( 'woocommerce_checkout_fields' , 'add_description');
+	function add_description( $fields ) {
+
+	    if ( is_page(24770) ) {
+        
+        
+        	$fields['billing']['billing_email']['description'] = 'NOTE: this email address MUST match the email you use to login to your current TNS Dashboard';
+
+        	//echo var_dump($fields['billing']['billing_email']);
+
+        }
+
+		return $fields;
+	}
+	*/
+
 
 	add_action('wp_head', 'add_col_css');
 	function add_col_css(){
-		if ( is_page(24770) ) {
+		if ( is_page(31568) || is_page(24770) || is_page(31567) || is_page(25245)) {
 			?>
-            <style >
+            <style>
             .woocommerce .col2-set .col-1, .woocommerce-page .col2-set .col-1 {
                 float:none;
 				width: 100%!important;
@@ -160,7 +183,14 @@
                 .select2-container {
                     padding-bottom: 1em;
                 }
-			</style >
+                
+            .full-payment {
+            	display: none;
+             }
+             .woocommerce form .form-row .woocommerce-input-wrapper #billing_email-description {
+             	display: block !important;
+             }
+			</style>
 		  <?php 
 		} else { ?>
 		    <style>
@@ -242,4 +272,31 @@
 			}
 		}
 		
+	}
+	/**
+	 * Display field value on the order edit page
+	 */
+	add_action( 'woocommerce_admin_order_data_after_billing_address', 'my_custom_checkout_field_display_admin_order_meta', 10, 1 );
+	
+	function my_custom_checkout_field_display_admin_order_meta($order){
+	    $first_name = get_post_meta( $order->get_id(), "student_first_name", true );
+	    $last_name = get_post_meta( $order->get_id(), "student_last_name", true );
+		$address1 = get_post_meta( $order->get_id(), "student_address_1", true );
+		$address2 = get_post_meta( $order->get_id(), "student_address_2", true ) ? get_post_meta( $order->get_id(), "student_address_2", true ) : null;
+		$city = get_post_meta( $order->get_id(), "student_city", true );
+		$state = get_post_meta( $order->get_id(), "student_state", true );
+		$zip = get_post_meta( $order->get_id(), "student_zip", true );
+		$email = get_post_meta( $order->get_id(), "student_email", true );
+		$phone = get_post_meta( $order->get_id(), "student_phone", true );
+		
+		echo '<h3><strong>'.__('Student Info').'</strong>';
+        echo '<div class="address">';
+        echo '<p>' . $first_name . ' ' . $last_name;
+        echo '<br/>' . $address1 . '<br/>';
+        if ( isset($address2) ) {
+            echo $address2 . '<br/>';
+        }
+        echo $city . ', ' . $state . ' ' . $zip . '</p>';
+        echo '<p><strong>Email address:</strong> <a href="mailto:' . $email . '">' . $email . '</a><br/>';
+        echo '<strong>Phone:</strong>' . $phone . '</p></div>';
 	}
